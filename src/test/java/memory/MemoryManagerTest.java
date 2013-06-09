@@ -60,4 +60,21 @@ public class MemoryManagerTest {
         assertEquals(releasedMemory.getAddress(), 0);
         assertEquals(releasedMemory.getSize(), MEMORY_SIZE);
     }
+
+    @Test
+    public void allocateDeferred() {
+        MemoryRequest request = new MemoryRequest(1, MEMORY_SIZE);
+        assertNotNull(manager.allocate(request));
+        request = new MemoryRequest(2, MEMORY_SIZE / 2);
+        assertNull(manager.allocate(request));
+        request = new MemoryRequest(3, MEMORY_SIZE / 2);
+        assertNull(manager.allocate(request));
+
+        Memory releasedThanAllocated = manager.deallocate(1);
+        assertEquals(releasedThanAllocated.allocatedBy, 2);
+        assertEquals(releasedThanAllocated.getSize(), 4);
+
+        request = new MemoryRequest(4, MEMORY_SIZE / 2);
+        assertNull(manager.allocate(request));
+    }
 }

@@ -1,5 +1,6 @@
 package memory;
 
+import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -44,7 +45,7 @@ public class MemoryManager {
             unallocated.remove(allocatedMemory);
             /* Split memory in half until the correct size is made.  */
             /* Add the halved memory pieces to the unallocated list. */
-            while(allocatedMemory.getSize() > request.getSize()) {
+            while (allocatedMemory.getSize() > request.getSize()) {
                 unallocated.add(allocatedMemory.split());
             }
             allocatedMemory.allocatedBy = request.getId();
@@ -63,12 +64,17 @@ public class MemoryManager {
     public Memory deallocate(int requestNumber) {
         /* Search through the allocated memory to find */
         /* the memory block to be released.            */
-        for(Memory allocatedMemory : allocated) {
-            if(allocatedMemory.allocatedBy == requestNumber) {
+        for (Memory allocatedMemory : allocated) {
+            if (allocatedMemory.allocatedBy == requestNumber) {
+                /* Remove memory block from allocated status. */
                 allocated.remove(allocatedMemory);
                 allocatedMemory.allocatedBy = 0;
+                /* Merge it with all of it's buddies. */
                 Memory mergedMemory = merge(allocatedMemory);
+                /* Add the merged block to the unallocated list. */
                 unallocated.add(mergedMemory);
+                /* See if any deferred requests can now be fulfilled. */
+                attemptAllocationOfDeferred();
                 return mergedMemory;
             }
         }
@@ -84,13 +90,13 @@ public class MemoryManager {
     private Memory merge(Memory memory) {
         int oldMemorySize = 0;
 
-        while(oldMemorySize != memory.getSize()) {
+        while (oldMemorySize != memory.getSize()) {
             oldMemorySize = memory.getSize();
 
             /* Search through the unallocated memory for merge candidates. */
-            for(Memory unallocatedMemory : unallocated) {
+            for (Memory unallocatedMemory : unallocated) {
                 /* Attempt to merge them. If null, the merge was not possible. */
-                if(memory.merge(unallocatedMemory) != null) {
+                if (memory.merge(unallocatedMemory) != null) {
                     /* Take the old memory out of the unallocated list. */
                     unallocated.remove(unallocatedMemory);
                     break;
@@ -100,5 +106,18 @@ public class MemoryManager {
 
         /* Return the memory block that has been merged if possible. */
         return memory;
+    }
+
+    /* Go through all deferred requests and attempt to allocate them. */
+    private void attemptAllocationOfDeferred() {
+        Iterator<MemoryRequest> iterator = deferredRequests.iterator();
+        while (iterator.hasNext()) {
+            MemoryRequest request = iterator.next();
+            /* If the system could allocate the request, */
+            /* remove it from the deferred list.         */
+            if (allocate(request) != null) {
+                iterator.remove();
+            }
+        }
     }
 }
