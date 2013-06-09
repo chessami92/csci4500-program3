@@ -1,7 +1,7 @@
 package memory;
 
 public class Memory {
-    public static int minSize;
+    public static int minBlockSize;
     private int address = 0;
     private int size;
     private int allocatedBy;
@@ -24,7 +24,7 @@ public class Memory {
     /* memory and the new memory are half the original size of the  */
     /* current memory block.                                        */
     public Memory split() {
-        if (allocatedBy != 0 || size == minSize) {
+        if (allocatedBy != 0 || size == minBlockSize) {
             return null;
         }
 
@@ -52,6 +52,9 @@ public class Memory {
         /* Set the new address appropriately and double the size. */
         address = (isEvenBuddy() ? address : memory.getAddress());
         size = size * 2;
+
+        /* This memory block has been adjusted to be   */
+        /* the new merged memory block. Return itself. */
         return this;
     }
 

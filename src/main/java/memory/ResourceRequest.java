@@ -7,7 +7,13 @@ public class ResourceRequest {
     /* Create a new resource request given an id and a requested size. */
     public ResourceRequest(int id, int size) {
         this.id = id;
-        this.size = size;
+        this.size = 1;
+
+        /* Convert the request to the next largest power    */
+        /* of two that is >= the minimum memory block size. */
+        while (this.size < size || this.size < Memory.minBlockSize) {
+            this.size = this.size * 2;
+        }
     }
 
     public int getId() {
