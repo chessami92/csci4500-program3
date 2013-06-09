@@ -34,7 +34,7 @@ public class Memory {
 
     /* Takes a memory block and attempts to merge them. */
     /* Returns null if they cannot be merged, returns   */
-    /* a new merged memory block if successful.         */
+    /* this resized merged memory block if successful.  */
     public Memory merge(Memory memory) {
         /* If they aren't the same size, they aren't buddies. */
         if (memory.getSize() != size) {

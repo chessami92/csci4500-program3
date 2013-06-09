@@ -51,8 +51,54 @@ public class MemoryManager {
             allocated.add(allocatedMemory);
             return allocatedMemory;
         } else {
+            /* Request could not be filled right now. Put it on hold. */
             deferredRequests.add(request);
             return null;
         }
+    }
+
+    /* Takes in a request number, finds it in the allocated    */
+    /* memory list and deallocates that memory block. Returns  */
+    /* the resulting memory block after merging if successful. */
+    public Memory deallocate(int requestNumber) {
+        /* Search through the allocated memory to find */
+        /* the memory block to be released.            */
+        for(Memory allocatedMemory : allocated) {
+            if(allocatedMemory.allocatedBy == requestNumber) {
+                allocated.remove(allocatedMemory);
+                allocatedMemory.allocatedBy = 0;
+                Memory mergedMemory = merge(allocatedMemory);
+                unallocated.add(mergedMemory);
+                return mergedMemory;
+            }
+        }
+
+        /* Cannot be deallocated because it had not been allocated. */
+        return new Memory(0);
+    }
+
+    /* Takes in a memory block and attempts to merge it with  */
+    /* the other memory blocks in the unallocated queue.      */
+    /* Returns the original memory if could not be merged, or */
+    /* returns a merged memory block.                         */
+    private Memory merge(Memory memory) {
+        int oldMemorySize = 0;
+
+        while(oldMemorySize != memory.getSize()) {
+            oldMemorySize = memory.getSize();
+
+            /* Search through the unallocated memory for merge candidates. */
+            for(Memory unallocatedMemory : unallocated) {
+                /* Attempt to merge them. If null, the merge was not possible. */
+                if(memory.merge(unallocatedMemory) != null) {
+                    /* Take the old memory out of the unallocated list. */
+                    unallocated.remove(unallocatedMemory);
+                    break;
+                }
+            }
+        }
+
+        /* Return the memory block that has been merged if possible. */
+        return memory;
     }
 }
