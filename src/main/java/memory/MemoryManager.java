@@ -6,12 +6,12 @@ import java.util.List;
 public class MemoryManager {
     private List<Memory> unallocated;
     private List<Memory> allocated;
-    private List<ResourceRequest> deferredRequests;
+    private List<MemoryRequest> deferredRequests;
 
     public MemoryManager(int memorySize, int minBlockSize) {
         unallocated = new LinkedList<Memory>();
         allocated = new LinkedList<Memory>();
-        deferredRequests = new LinkedList<ResourceRequest>();
+        deferredRequests = new LinkedList<MemoryRequest>();
 
         /* Create the starting memory with the given */
         /* size and the minimum block size.          */
@@ -22,7 +22,7 @@ public class MemoryManager {
 
     /* Allocate memory given a request. Returns the memory  */
     /* block allocated if successful, null if unsuccessful. */
-    public Memory allocate(ResourceRequest request) {
+    public Memory allocate(MemoryRequest request) {
         Memory allocatedMemory = null;
 
         /* Check all unallocated cells and try to find the best fit. */

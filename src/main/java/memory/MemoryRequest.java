@@ -1,11 +1,11 @@
 package memory;
 
-public class ResourceRequest {
+public class MemoryRequest {
     private int id;
     private int size;
 
     /* Create a new resource request given an id and a requested size. */
-    public ResourceRequest(int id, int size) {
+    public MemoryRequest(int id, int size) {
         this.id = id;
         this.size = 1;
 

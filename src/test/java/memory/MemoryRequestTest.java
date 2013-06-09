@@ -6,7 +6,7 @@ import org.testng.annotations.Test;
 
 import static org.testng.Assert.assertEquals;
 
-public class ResourceRequestTest {
+public class MemoryRequestTest {
 
     @BeforeMethod
     public void setup() {
@@ -20,7 +20,7 @@ public class ResourceRequestTest {
 
     @Test(dataProvider = "createTestCases")
     public void testGetSize(int requestSize, int outcomeSize) {
-        ResourceRequest request = new ResourceRequest(1, requestSize);
+        MemoryRequest request = new MemoryRequest(1, requestSize);
 
         assertEquals(request.getSize(), outcomeSize);
     }

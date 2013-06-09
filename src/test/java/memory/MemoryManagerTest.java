@@ -18,7 +18,7 @@ public class MemoryManagerTest {
 
     @Test
     public void allocate() {
-        ResourceRequest request = new ResourceRequest(1, 2);
+        MemoryRequest request = new MemoryRequest(1, 2);
         Memory allocatedMemory;
         for (int i = 0; i < MEMORY_SIZE / MIN_BLOCK_SIZE; ++i) {
             allocatedMemory = manager.allocate(request);
