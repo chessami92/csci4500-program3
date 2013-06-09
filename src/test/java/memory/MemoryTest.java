@@ -14,6 +14,7 @@ public class MemoryTest {
     @BeforeMethod
     public void setup() {
         memory = new Memory(ORIGINAL_SIZE);
+        Memory.minBlockSize = 2;
     }
 
     @Test
@@ -28,7 +29,7 @@ public class MemoryTest {
 
     @Test
     public void split_minSize() {
-        Memory.minBlockSize = 4;
+        assertNotNull(memory.split());
         assertNotNull(memory.split());
         assertNull(memory.split());
     }
