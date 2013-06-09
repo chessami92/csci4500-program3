@@ -4,7 +4,7 @@ public class Memory {
     public static int minBlockSize;
     private int address = 0;
     private int size;
-    private int allocatedBy;
+    protected int allocatedBy;
 
     /* Create the initial, unallocated memory block. */
     public Memory(int size) {

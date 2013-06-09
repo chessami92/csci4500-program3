@@ -3,6 +3,8 @@ package memory;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
+import static org.testng.Assert.*;
+
 public class MemoryManagerTest {
 
     private static final int MEMORY_SIZE = 8;
@@ -15,7 +17,15 @@ public class MemoryManagerTest {
     }
 
     @Test
-    public void allocateTwo() {
-
+    public void allocate() {
+        ResourceRequest request = new ResourceRequest(1, 2);
+        Memory allocatedMemory;
+        for (int i = 0; i < MEMORY_SIZE / MIN_BLOCK_SIZE; ++i) {
+            allocatedMemory = manager.allocate(request);
+            assertNotNull(allocatedMemory);
+            assertEquals(allocatedMemory.getAddress(), i * MIN_BLOCK_SIZE);
+        }
+        allocatedMemory = manager.allocate(request);
+        assertNull(allocatedMemory);
     }
 }
