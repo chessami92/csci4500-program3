@@ -1,13 +1,13 @@
 package memory;
 
-import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Queue;
 
 public class MemoryManager {
     private List<Memory> unallocated;
     private List<Memory> allocated;
-    private List<MemoryRequest> deferredRequests;
+    private Queue<MemoryRequest> deferredRequests;
 
     public MemoryManager(int memorySize, int minBlockSize) {
         unallocated = new LinkedList<Memory>();
@@ -110,13 +110,16 @@ public class MemoryManager {
 
     /* Go through all deferred requests and attempt to allocate them. */
     private void attemptAllocationOfDeferred() {
-        Iterator<MemoryRequest> iterator = deferredRequests.iterator();
-        while (iterator.hasNext()) {
-            MemoryRequest request = iterator.next();
-            /* If the system could allocate the request, */
-            /* remove it from the deferred list.         */
-            if (allocate(request) != null) {
-                iterator.remove();
+        int numRequests = deferredRequests.size();
+
+        for (int i = 0; i < numRequests; ++i) {
+            /* Attempt to allocate given the request. */
+            /* If not possible, it is added back to   */
+            /* the deferred requests list.            */
+            Memory allocated = allocate(deferredRequests.poll());
+            if (allocated != null) {
+                System.out.printf("\tDeferred request %d allocated; addr = 0x%08x.\n",
+                        allocated.allocatedBy, allocated.getAddress());
             }
         }
     }
