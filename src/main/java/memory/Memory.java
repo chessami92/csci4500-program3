@@ -24,12 +24,39 @@ public class Memory {
     /* memory and the new memory are half the original size of the  */
     /* current memory block.                                        */
     public Memory split() {
-        if( allocatedBy != 0 || size == minSize ) {
+        if (allocatedBy != 0 || size == minSize) {
             return null;
         }
 
         size = size / 2;
         return new Memory(address + size, size);
+    }
+
+    /* Takes a memory block and attempts to merge them. */
+    /* Returns null if they cannot be merged, returns   */
+    /* a new merged memory block if successful.         */
+    public Memory merge(Memory memory) {
+        /* If they aren't the same size, they aren't buddies. */
+        if (memory.getSize() != size) {
+            return null;
+        }
+
+        /* See if this is on odd or even side of split */
+        /* to determine the buddy's address.           */
+        int buddyAddress = (isEvenBuddy() ? address + size : address - size);
+
+        if (buddyAddress != memory.getAddress()) {
+            return null;
+        }
+
+        /* Set the new address appropriately and double the size. */
+        address = (isEvenBuddy() ? address : memory.getAddress());
+        size = size * 2;
+        return this;
+    }
+
+    private boolean isEvenBuddy() {
+        return (address / size % 2 == 0);
     }
 
     public int getAddress() {
