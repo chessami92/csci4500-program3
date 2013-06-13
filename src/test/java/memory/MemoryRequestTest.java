@@ -10,7 +10,7 @@ public class MemoryRequestTest {
 
     @BeforeMethod
     public void setup() {
-        Memory.minBlockSize = 8;
+        Memory.minBlockSize = Memory.convertToPowerOfTwo(8);
     }
 
     @DataProvider(name = "testBlockSizes")

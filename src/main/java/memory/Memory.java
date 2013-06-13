@@ -1,6 +1,7 @@
 package memory;
 
 public class Memory {
+    /* The minimum block size available, stored as log2 of the actual size. */
     public static int minBlockSize;
     /* Which request ID is holding this memory block. */
     protected int allocatedBy;
@@ -21,14 +22,13 @@ public class Memory {
         this.address = address;
     }
 
-    /* Take in an integer value, and quickly convert it to a power of two. */
-    /* Will not work on integers that are not exact powers of two.         */
-    public int convertToPowerOfTwo(int num) {
+    /* Take in an integer value, and convert it to a power of two.      */
+    /* Will return the next highest power of two if not an exact match. */
+    public static int convertToPowerOfTwo(int num) {
         int power = 0;
 
-        while (num >> 1 != 0) {
+        while((1 << power) < num) {
             power++;
-            num = num >> 1;
         }
 
         return power;
@@ -40,7 +40,7 @@ public class Memory {
     /* memory and the new memory are half the original size of the  */
     /* current memory block.                                        */
     public Memory split() {
-        if (allocatedBy != 0 || getSize() == minBlockSize) {
+        if (allocatedBy != 0 || size == minBlockSize) {
             return null;
         }
 

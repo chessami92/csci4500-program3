@@ -3,9 +3,7 @@ package memory;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
-import static org.testng.AssertJUnit.assertEquals;
-import static org.testng.AssertJUnit.assertNotNull;
-import static org.testng.AssertJUnit.assertNull;
+import static org.testng.AssertJUnit.*;
 
 public class MemoryTest {
     private static final int ORIGINAL_SIZE = 8;
@@ -14,7 +12,16 @@ public class MemoryTest {
     @BeforeMethod
     public void setup() {
         memory = new Memory(ORIGINAL_SIZE);
-        Memory.minBlockSize = 2;
+        Memory.minBlockSize = Memory.convertToPowerOfTwo(2);
+    }
+
+    @Test
+    public void convertToPowerOfTwo() {
+        assertEquals(Memory.convertToPowerOfTwo(1), 0);
+        assertEquals(Memory.convertToPowerOfTwo(2), 1);
+        assertEquals(Memory.convertToPowerOfTwo(64), 6);
+        assertEquals(Memory.convertToPowerOfTwo(60), 6);
+        assertEquals(Memory.convertToPowerOfTwo(100), 7);
     }
 
     @Test

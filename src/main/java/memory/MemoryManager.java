@@ -18,7 +18,7 @@ public class MemoryManager {
         /* size and the minimum block size.          */
         unallocated.add(new Memory(memorySize));
         /* Set the minimum size for a memory block. */
-        Memory.minBlockSize = minBlockSize;
+        Memory.minBlockSize = Memory.convertToPowerOfTwo(minBlockSize);
     }
 
     /* Allocate memory given a request. Returns the memory  */
