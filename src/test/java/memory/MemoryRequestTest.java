@@ -15,7 +15,7 @@ public class MemoryRequestTest {
 
     @DataProvider(name = "testBlockSizes")
     public Object[][] createTestCases() {
-        return new Object[][]{{1, 8}, {4, 8}, {8, 8}, {14, 16}, {25, 32}};
+        return new Object[][]{{1, 3}, {4, 3}, {8, 3}, {14, 4}, {25, 5}};
     }
 
     @Test(dataProvider = "createTestCases")

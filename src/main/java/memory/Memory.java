@@ -46,7 +46,7 @@ public class Memory {
 
         /* Size is stored as power of two, decrement to halve size. */
         size--;
-        return new Memory(address + getSize(), getSize());
+        return new Memory(address + (1 << size), (1 << size));
     }
 
     /* Takes a memory block and attempts to merge them. */
@@ -55,7 +55,7 @@ public class Memory {
     public Memory merge(Memory memory) {
         /* See if this is on odd or even side of split */
         /* to determine the buddy's address.           */
-        int buddyAddress = (isEvenBuddy() ? address + getSize() : address - getSize());
+        int buddyAddress = (isEvenBuddy() ? address + (1 << size) : address - (1 << size));
 
         if (buddyAddress != memory.getAddress()) {
             return null;
@@ -80,6 +80,6 @@ public class Memory {
     }
 
     public int getSize() {
-        return 1 << size;
+        return size;
     }
 }

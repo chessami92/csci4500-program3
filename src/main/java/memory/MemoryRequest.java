@@ -21,6 +21,6 @@ public class MemoryRequest {
     }
 
     public int getSize() {
-        return 1 << size;
+        return size;
     }
 }
