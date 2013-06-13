@@ -12,7 +12,7 @@ public class BuddyMemoryAlgorithm {
 
         MemoryManager manager = new MemoryManager(in.nextInt(), in.nextInt());
 
-        while (in.hasNextLine()) {
+        while (in.hasNextInt()) {
             int requestId = in.nextInt();
             char requestType = in.next().charAt(0);
 
