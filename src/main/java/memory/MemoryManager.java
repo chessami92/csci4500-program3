@@ -96,12 +96,12 @@ public class MemoryManager {
                 allocated.remove(allocatedMemory);
                 allocatedMemory.allocatedBy = 0;
                 /* Merge it with all of it's buddies. */
-                Memory mergedMemory = merge(allocatedMemory);
+                Memory merged = merge(allocatedMemory);
                 /* Add the merged block to the unallocated list. */
-//                unallocated.add(mergedMemory);
+                unallocated.get(merged.getSize() - Memory.minBlockSize).add(merged);
                 /* See if any deferred requests can now be fulfilled. */
                 attemptAllocationOfDeferred();
-                return mergedMemory;
+                return merged;
             }
         }
 
@@ -114,20 +114,21 @@ public class MemoryManager {
     /* Returns the original memory if could not be merged, or */
     /* returns a merged memory block.                         */
     private Memory merge(Memory memory) {
-        int oldMemorySize = 0;
+        /* Obtain the list of memory blocks of the same size. */
+        int sameSizeIndex = memory.getSize() - Memory.minBlockSize;
+        List<Memory> sameSizeMemories = unallocated.get(sameSizeIndex);
 
-        while (oldMemorySize != memory.getSize()) {
-            oldMemorySize = memory.getSize();
+        int buddyAddress = memory.getBuddyAddress();
 
-            /* Search through the unallocated memory for merge candidates. */
-//            for (Memory unallocatedMemory : unallocated) {
-                /* Attempt to merge them. If null, the merge was not possible. */
-//                if (memory.merge(unallocatedMemory) != null) {
-//                    /* Take the old memory out of the unallocated list. */
-//                    unallocated.remove(unallocatedMemory);
-//                    break;
-//                }
-//            }
+        /* Search through all other memory cells of the */
+        /* same size to see if they can be merged.      */
+        for (Memory mergeCandidate : sameSizeMemories) {
+            if (mergeCandidate.getAddress() == buddyAddress) {
+                /* Remove the merge candidate from the unallocated list. */
+                sameSizeMemories.remove(mergeCandidate);
+                /* Recursively attempt to merge again. */
+                return merge(memory.merge(mergeCandidate));
+            }
         }
 
         /* Return the memory block that has been merged if possible. */

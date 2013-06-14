@@ -61,9 +61,4 @@ public class MemoryTest {
         assertEquals(merged.getSize(), ORIGINAL_SIZE + 1);
         assertEquals(merged.getAddress(), 0);
     }
-
-    @Test
-    public void failedMerge_wrongAddress() {
-        assertNull(memory.merge(memory));
-    }
 }

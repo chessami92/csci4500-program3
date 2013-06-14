@@ -44,6 +44,18 @@ public class MemoryManagerTest {
     }
 
     @Test
+    public void allocateDeallocate() {
+        MemoryRequest request = new MemoryRequest(1, MEMORY_SIZE);
+        Memory memory = manager.allocate(request);
+        assertEquals(memory.allocatedBy, 1);
+        assertEquals(memory.getSize(), Memory.convertToPowerOfTwo(MEMORY_SIZE));
+
+        memory = manager.deallocate(1);
+        assertEquals(memory.allocatedBy, 0);
+        assertEquals(memory.getSize(), Memory.convertToPowerOfTwo(MEMORY_SIZE));
+    }
+
+    @Test
     public void deallocate() {
         MemoryRequest request = new MemoryRequest(1, MIN_BLOCK_SIZE);
         manager.allocate(request);
@@ -83,9 +95,13 @@ public class MemoryManagerTest {
 
         Memory releasedThanAllocated = manager.deallocate(1);
         assertEquals(releasedThanAllocated.allocatedBy, 2);
-        assertEquals(releasedThanAllocated.getSize(), 2);
+        assertEquals(releasedThanAllocated.getSize(), Memory.convertToPowerOfTwo(MEMORY_SIZE / 2));
 
-        request = new MemoryRequest(4, MEMORY_SIZE / 2);
+        request = new MemoryRequest(4, MEMORY_SIZE / 4);
         assertNull(manager.allocate(request));
+
+        releasedThanAllocated = manager.deallocate(2);
+        assertEquals(releasedThanAllocated.allocatedBy, 4);
+        assertEquals(releasedThanAllocated.getSize(), Memory.convertToPowerOfTwo(MEMORY_SIZE / 4));
     }
 }
