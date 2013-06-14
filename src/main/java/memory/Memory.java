@@ -49,18 +49,9 @@ public class Memory {
         return new Memory(address + (1 << size), size);
     }
 
-    /* Takes a memory block and attempts to merge them. */
-    /* Returns null if they cannot be merged, returns   */
-    /* this resized merged memory block if successful.  */
+    /* Takes a memory block and merges it with itself, setting the  */
+    /* appropriate address. Returns itself, the grown memory block. */
     public Memory merge(Memory memory) {
-        /* See if this is on odd or even side of split */
-        /* to determine the buddy's address.           */
-        int buddyAddress = (isEvenBuddy() ? address + (1 << size) : address - (1 << size));
-
-        if (buddyAddress != memory.getAddress()) {
-            return null;
-        }
-
         /* Set the new address appropriately and double the size. */
         address = (isEvenBuddy() ? address : memory.getAddress());
         /* Size is stored as power of two, increment to double size. */
@@ -69,6 +60,10 @@ public class Memory {
         /* This memory block has been adjusted to be   */
         /* the new merged memory block. Return itself. */
         return this;
+    }
+
+    public int getBuddyAddress() {
+        return  (isEvenBuddy() ? address + (1 << size) : address - (1 << size));
     }
 
     private boolean isEvenBuddy() {

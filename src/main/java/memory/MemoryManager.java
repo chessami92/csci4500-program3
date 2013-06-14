@@ -1,53 +1,48 @@
 package memory;
 
+import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Queue;
 
 public class MemoryManager {
-    private List<Memory> unallocated;
+    /* List of lists of memory. Element zero is the list of memory blocks */
+    /* of the minimum size, element one is list of next bigger blocks.    */
+    private List<List<Memory>> unallocated;
+    /* A list of the already allocated memory locations. */
     private List<Memory> allocated;
+    /* A queue of waiting deferred requests. */
     private Queue<MemoryRequest> deferredRequests;
 
     public MemoryManager(int memorySize, int minBlockSize) {
-        unallocated = new LinkedList<Memory>();
+        int memorySizeLog2 = Memory.convertToPowerOfTwo(memorySize);
+        int minBlockSizeLog2 = Memory.convertToPowerOfTwo(minBlockSize);
+
+        unallocated = new ArrayList<List<Memory>>();
+        for (int i = 0; i < memorySizeLog2 - minBlockSizeLog2 + 1; ++i) {
+            unallocated.add(i, new LinkedList<Memory>());
+        }
         allocated = new LinkedList<Memory>();
         deferredRequests = new LinkedList<MemoryRequest>();
 
+        /* Set the minimum size for a memory block. */
+        Memory.minBlockSize = minBlockSizeLog2;
+
         /* Create the starting memory with the given */
         /* size and the minimum block size.          */
-        unallocated.add(new Memory(Memory.convertToPowerOfTwo(memorySize)));
-        /* Set the minimum size for a memory block. */
-        Memory.minBlockSize = Memory.convertToPowerOfTwo(minBlockSize);
+        addToUnallocated(new Memory(memorySizeLog2));
     }
 
     /* Allocate memory given a request. Returns the memory  */
     /* block allocated if successful, null if unsuccessful. */
     public Memory allocate(MemoryRequest request) {
-        Memory allocatedMemory = null;
-
-        /* Check all unallocated cells and try to find the best fit. */
-        for (Memory memory : unallocated) {
-            /* Check if this memory cell could fulfill the request. */
-            if (memory.getSize() >= request.getSize()) {
-                /* If this is the first block that can fulfill the request. */
-                if (allocatedMemory == null) {
-                    allocatedMemory = memory;
-                } else if (memory.getSize() < allocatedMemory.getSize()) {
-                    /* A better fit was found. */
-                    allocatedMemory = memory;
-                }
-            }
-        }
+        /* Attempt to find a large enough memory location. */
+        Memory allocatedMemory = findAvailableMemory(request.getSize());
 
         /* Check if a free memory block of enough size was found. */
         if (allocatedMemory != null) {
-            unallocated.remove(allocatedMemory);
-            /* Split memory in half until the correct size is made.  */
-            /* Add the halved memory pieces to the unallocated list. */
-            while (allocatedMemory.getSize() > request.getSize()) {
-                unallocated.add(allocatedMemory.split());
-            }
+            allocatedMemory = splitToSize(allocatedMemory, request.getSize());
+
             allocatedMemory.allocatedBy = request.getId();
             allocated.add(allocatedMemory);
             return allocatedMemory;
@@ -56,6 +51,38 @@ public class MemoryManager {
             deferredRequests.add(request);
             return null;
         }
+    }
+
+    /* Find an available memory location at least the size passed */
+    /* (in log2). The memory chunk returned may be larger.        */
+    /* The memory block is removed from the unused list.          */
+    public Memory findAvailableMemory(int desiredSize) {
+        Memory availableMemory = null;
+
+        /* See which list of memory elements to begin looking at. */
+        int smallestPossible = desiredSize - Memory.minBlockSize;
+
+        for (int i = smallestPossible; i < unallocated.size(); ++i) {
+            /* List of memory chunks of size i. */
+            List<Memory> iSizeMemories = unallocated.get(i);
+            if (iSizeMemories.size() > 0) {
+                availableMemory = iSizeMemories.remove(0);
+                break;
+            }
+        }
+
+        return availableMemory;
+    }
+
+    /* Halve the size of the memory block until it is the desired size. */
+    /* Adds the split off memory blocks back to the unallocated lists.  */
+    public Memory splitToSize(Memory foundMemory, int desiredSize) {
+        while (foundMemory.getSize() > desiredSize) {
+            Memory newMemory = foundMemory.split();
+            addToUnallocated(newMemory);
+        }
+
+        return foundMemory;
     }
 
     /* Takes in a request number, finds it in the allocated    */
@@ -70,12 +97,12 @@ public class MemoryManager {
                 allocated.remove(allocatedMemory);
                 allocatedMemory.allocatedBy = 0;
                 /* Merge it with all of it's buddies. */
-                Memory mergedMemory = merge(allocatedMemory);
+                Memory merged = merge(allocatedMemory);
                 /* Add the merged block to the unallocated list. */
-                unallocated.add(mergedMemory);
+                addToUnallocated(merged);
                 /* See if any deferred requests can now be fulfilled. */
                 attemptAllocationOfDeferred();
-                return mergedMemory;
+                return merged;
             }
         }
 
@@ -84,23 +111,24 @@ public class MemoryManager {
     }
 
     /* Takes in a memory block and attempts to merge it with  */
-    /* the other memory blocks in the unallocated queue.      */
+    /* the other memory blocks in the unallocated lists.      */
     /* Returns the original memory if could not be merged, or */
     /* returns a merged memory block.                         */
     private Memory merge(Memory memory) {
-        int oldMemorySize = 0;
+        /* Obtain the list of memory blocks of the same size. */
+        int sameSizeIndex = memory.getSize() - Memory.minBlockSize;
+        List<Memory> sameSizeMemories = unallocated.get(sameSizeIndex);
 
-        while (oldMemorySize != memory.getSize()) {
-            oldMemorySize = memory.getSize();
+        int buddyAddress = memory.getBuddyAddress();
 
-            /* Search through the unallocated memory for merge candidates. */
-            for (Memory unallocatedMemory : unallocated) {
-                /* Attempt to merge them. If null, the merge was not possible. */
-                if (memory.merge(unallocatedMemory) != null) {
-                    /* Take the old memory out of the unallocated list. */
-                    unallocated.remove(unallocatedMemory);
-                    break;
-                }
+        /* Search through all other memory cells of the */
+        /* same size to see if they can be merged.      */
+        for (Memory mergeCandidate : sameSizeMemories) {
+            if (mergeCandidate.getAddress() == buddyAddress) {
+                /* Remove the merge candidate from the unallocated list. */
+                sameSizeMemories.remove(mergeCandidate);
+                /* Recursively attempt to merge again. */
+                return merge(memory.merge(mergeCandidate));
             }
         }
 
@@ -122,5 +150,11 @@ public class MemoryManager {
                         allocated.allocatedBy, allocated.getAddress());
             }
         }
+    }
+
+    /* Takes a memory location and adds it to */
+    /* the unallocated list of lists.         */
+    private void addToUnallocated(Memory memory) {
+        unallocated.get(memory.getSize() - Memory.minBlockSize).add(memory);
     }
 }

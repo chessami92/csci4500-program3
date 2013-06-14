@@ -7,13 +7,24 @@ import static org.testng.Assert.*;
 
 public class MemoryManagerTest {
 
-    private static final int MEMORY_SIZE = 8;
-    private static final int MIN_BLOCK_SIZE = 2;
+    private static final int MEMORY_SIZE = 16;
+    private static final int MIN_BLOCK_SIZE = 4;
     private MemoryManager manager;
 
     @BeforeMethod
     public void setup() {
         manager = new MemoryManager(MEMORY_SIZE, MIN_BLOCK_SIZE);
+    }
+
+    @Test
+    public void findAvailableMemory() {
+        assertEquals(manager.findAvailableMemory(2).getSize(), 4, "Should have found the block of size 16.");
+    }
+
+    @Test
+    public void splitToSize() {
+        Memory testMemory = new Memory(Memory.convertToPowerOfTwo(MEMORY_SIZE));
+        assertEquals(manager.splitToSize(testMemory, 2).getSize(), 2);
     }
 
     @Test
@@ -30,6 +41,18 @@ public class MemoryManagerTest {
         request = new MemoryRequest(MEMORY_SIZE / MIN_BLOCK_SIZE, MIN_BLOCK_SIZE);
         allocatedMemory = manager.allocate(request);
         assertNull(allocatedMemory);
+    }
+
+    @Test
+    public void allocateDeallocate() {
+        MemoryRequest request = new MemoryRequest(1, MEMORY_SIZE);
+        Memory memory = manager.allocate(request);
+        assertEquals(memory.allocatedBy, 1);
+        assertEquals(memory.getSize(), Memory.convertToPowerOfTwo(MEMORY_SIZE));
+
+        memory = manager.deallocate(1);
+        assertEquals(memory.allocatedBy, 0);
+        assertEquals(memory.getSize(), Memory.convertToPowerOfTwo(MEMORY_SIZE));
     }
 
     @Test
@@ -72,9 +95,13 @@ public class MemoryManagerTest {
 
         Memory releasedThanAllocated = manager.deallocate(1);
         assertEquals(releasedThanAllocated.allocatedBy, 2);
-        assertEquals(releasedThanAllocated.getSize(), 2);
+        assertEquals(releasedThanAllocated.getSize(), Memory.convertToPowerOfTwo(MEMORY_SIZE / 2));
 
-        request = new MemoryRequest(4, MEMORY_SIZE / 2);
+        request = new MemoryRequest(4, MEMORY_SIZE / 4);
         assertNull(manager.allocate(request));
+
+        releasedThanAllocated = manager.deallocate(2);
+        assertEquals(releasedThanAllocated.allocatedBy, 4);
+        assertEquals(releasedThanAllocated.getSize(), Memory.convertToPowerOfTwo(MEMORY_SIZE / 4));
     }
 }
