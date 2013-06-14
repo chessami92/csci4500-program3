@@ -12,7 +12,7 @@ public class Memory {
 
     /* Create the initial, unallocated memory block. */
     public Memory(int size) {
-        this.size = convertToPowerOfTwo(size);
+        this.size = size;
         allocatedBy = 0;
     }
 
@@ -46,7 +46,7 @@ public class Memory {
 
         /* Size is stored as power of two, decrement to halve size. */
         size--;
-        return new Memory(address + (1 << size), (1 << size));
+        return new Memory(address + (1 << size), size);
     }
 
     /* Takes a memory block and attempts to merge them. */

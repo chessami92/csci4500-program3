@@ -11,7 +11,7 @@ public class MemoryTest {
 
     @BeforeMethod
     public void setup() {
-        memory = new Memory(1 << ORIGINAL_SIZE);
+        memory = new Memory(ORIGINAL_SIZE);
         Memory.minBlockSize = Memory.convertToPowerOfTwo(2);
     }
 
@@ -43,7 +43,7 @@ public class MemoryTest {
 
     @Test
     public void merge_memoryFirst() {
-        Memory newMemory = new Memory((1 << ORIGINAL_SIZE), (1 << ORIGINAL_SIZE));
+        Memory newMemory = new Memory((1 << ORIGINAL_SIZE), ORIGINAL_SIZE);
 
         Memory merged = memory.merge(newMemory);
         assertMergeSuccess(merged);
@@ -51,7 +51,7 @@ public class MemoryTest {
 
     @Test
     public void merge_newMemoryFirst() {
-        Memory newMemory = new Memory((1 << ORIGINAL_SIZE), (1 << ORIGINAL_SIZE));
+        Memory newMemory = new Memory((1 << ORIGINAL_SIZE), ORIGINAL_SIZE);
 
         Memory merged = newMemory.merge(memory);
         assertMergeSuccess(merged);

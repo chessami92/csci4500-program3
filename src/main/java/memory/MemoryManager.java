@@ -16,7 +16,7 @@ public class MemoryManager {
 
         /* Create the starting memory with the given */
         /* size and the minimum block size.          */
-        unallocated.add(new Memory(memorySize));
+        unallocated.add(new Memory(Memory.convertToPowerOfTwo(memorySize)));
         /* Set the minimum size for a memory block. */
         Memory.minBlockSize = Memory.convertToPowerOfTwo(minBlockSize);
     }
