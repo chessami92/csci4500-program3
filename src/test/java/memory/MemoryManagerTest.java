@@ -7,13 +7,24 @@ import static org.testng.Assert.*;
 
 public class MemoryManagerTest {
 
-    private static final int MEMORY_SIZE = 8;
-    private static final int MIN_BLOCK_SIZE = 2;
+    private static final int MEMORY_SIZE = 16;
+    private static final int MIN_BLOCK_SIZE = 4;
     private MemoryManager manager;
 
     @BeforeMethod
     public void setup() {
         manager = new MemoryManager(MEMORY_SIZE, MIN_BLOCK_SIZE);
+    }
+
+    @Test
+    public void findAvailableMemory() {
+        assertEquals(manager.findAvailableMemory(2).getSize(), 4, "Should have found the block of size 16.");
+    }
+
+    @Test
+    public void splitToSize() {
+        Memory testMemory = new Memory(Memory.convertToPowerOfTwo(MEMORY_SIZE));
+        assertEquals(manager.splitToSize(testMemory, 2).getSize(), 2);
     }
 
     @Test
