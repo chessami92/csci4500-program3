@@ -25,11 +25,12 @@ public class MemoryManager {
         allocated = new LinkedList<Memory>();
         deferredRequests = new LinkedList<MemoryRequest>();
 
-        /* Create the starting memory with the given */
-        /* size and the minimum block size.          */
-        unallocated.get(memorySizeLog2 - minBlockSizeLog2).add(new Memory(memorySizeLog2));
         /* Set the minimum size for a memory block. */
         Memory.minBlockSize = minBlockSizeLog2;
+
+        /* Create the starting memory with the given */
+        /* size and the minimum block size.          */
+        addToUnallocated(new Memory(memorySizeLog2));
     }
 
     /* Allocate memory given a request. Returns the memory  */
@@ -78,7 +79,7 @@ public class MemoryManager {
     public Memory splitToSize(Memory foundMemory, int desiredSize) {
         while (foundMemory.getSize() > desiredSize) {
             Memory newMemory = foundMemory.split();
-            unallocated.get(newMemory.getSize() - Memory.minBlockSize).add(newMemory);
+            addToUnallocated(newMemory);
         }
 
         return foundMemory;
@@ -98,7 +99,7 @@ public class MemoryManager {
                 /* Merge it with all of it's buddies. */
                 Memory merged = merge(allocatedMemory);
                 /* Add the merged block to the unallocated list. */
-                unallocated.get(merged.getSize() - Memory.minBlockSize).add(merged);
+                addToUnallocated(merged);
                 /* See if any deferred requests can now be fulfilled. */
                 attemptAllocationOfDeferred();
                 return merged;
@@ -149,5 +150,11 @@ public class MemoryManager {
                         allocated.allocatedBy, allocated.getAddress());
             }
         }
+    }
+
+    /* Takes a memory location and adds it to */
+    /* the unallocated list of lists.         */
+    private void addToUnallocated(Memory memory) {
+        unallocated.get(memory.getSize() - Memory.minBlockSize).add(memory);
     }
 }
