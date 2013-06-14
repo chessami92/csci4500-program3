@@ -1,10 +1,14 @@
 package memory;
 
 public class Memory {
+    /* The minimum block size available, stored as log2 of the actual size. */
     public static int minBlockSize;
-    private int address = 0;
-    private int size;
+    /* Which request ID is holding this memory block. */
     protected int allocatedBy;
+    /* Address of this memory block. */
+    private int address = 0;
+    /* Size, stored as log2 of the actual size. */
+    private int size;
 
     /* Create the initial, unallocated memory block. */
     public Memory(int size) {
@@ -18,6 +22,18 @@ public class Memory {
         this.address = address;
     }
 
+    /* Take in an integer value, and convert it to a power of two.      */
+    /* Will return the next highest power of two if not an exact match. */
+    public static int convertToPowerOfTwo(int num) {
+        int power = 0;
+
+        while((1 << power) < num) {
+            power++;
+        }
+
+        return power;
+    }
+
     /* Creates and returns a new memory region split from this one. */
     /* Returns null if the memory cannot be split because it is     */
     /* allocated or is already at the minimum size.The size of this */
@@ -28,22 +44,18 @@ public class Memory {
             return null;
         }
 
-        size = size / 2;
-        return new Memory(address + size, size);
+        /* Size is stored as power of two, decrement to halve size. */
+        size--;
+        return new Memory(address + (1 << size), size);
     }
 
     /* Takes a memory block and attempts to merge them. */
     /* Returns null if they cannot be merged, returns   */
     /* this resized merged memory block if successful.  */
     public Memory merge(Memory memory) {
-        /* If they aren't the same size, they aren't buddies. */
-        if (memory.getSize() != size) {
-            return null;
-        }
-
         /* See if this is on odd or even side of split */
         /* to determine the buddy's address.           */
-        int buddyAddress = (isEvenBuddy() ? address + size : address - size);
+        int buddyAddress = (isEvenBuddy() ? address + (1 << size) : address - (1 << size));
 
         if (buddyAddress != memory.getAddress()) {
             return null;
@@ -51,7 +63,8 @@ public class Memory {
 
         /* Set the new address appropriately and double the size. */
         address = (isEvenBuddy() ? address : memory.getAddress());
-        size = size * 2;
+        /* Size is stored as power of two, increment to double size. */
+        size++;
 
         /* This memory block has been adjusted to be   */
         /* the new merged memory block. Return itself. */
@@ -59,7 +72,7 @@ public class Memory {
     }
 
     private boolean isEvenBuddy() {
-        return (address / size % 2 == 0);
+        return (((address >> size) & 1) == 0);
     }
 
     public int getAddress() {
