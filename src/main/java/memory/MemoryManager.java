@@ -1,5 +1,15 @@
 package memory;
 
+/*
+ * Author: Josh DeWitt
+ * Written for Program 3 during CSCI4500 in 2013 Summer session.
+ *
+ * Main buddy memory management algorithm implementation that takes memory
+ * requests for allocation, and allocation IDs for deallocation.
+ * Has a list of allocated memory chunks, and a list of lists of unallocated
+ * memory chunks for fast allocation.
+ */
+
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
@@ -14,6 +24,9 @@ public class MemoryManager {
     /* A queue of waiting deferred requests. */
     private Queue<MemoryRequest> deferredRequests;
 
+    /* Create the memory manager and initialize all of the */
+    /* lists and queues required. Add one full-sized chunk */
+    /* of memory to the unallocated memory list of lists.  */
     public MemoryManager(int memorySize, int minBlockSize) {
         int memorySizeLog2 = Memory.convertToPowerOfTwo(memorySize);
         int minBlockSizeLog2 = Memory.convertToPowerOfTwo(minBlockSize);
@@ -35,6 +48,8 @@ public class MemoryManager {
 
     /* Allocate memory given a request. Returns the memory  */
     /* block allocated if successful, null if unsuccessful. */
+    /* Unsuccessful allocations will cause the memory       */
+    /* request to be stored in the deferred requests queue. */
     public Memory allocate(MemoryRequest request) {
         /* Attempt to find a large enough memory location. */
         Memory allocatedMemory = findAvailableMemory(request.getSize());
@@ -56,7 +71,7 @@ public class MemoryManager {
     /* Find an available memory location at least the size passed */
     /* (in log2). The memory chunk returned may be larger.        */
     /* The memory block is removed from the unused list.          */
-    public Memory findAvailableMemory(int desiredSize) {
+    protected Memory findAvailableMemory(int desiredSize) {
         Memory availableMemory = null;
 
         /* See which list of memory elements to begin looking at. */
@@ -76,7 +91,7 @@ public class MemoryManager {
 
     /* Halve the size of the memory block until it is the desired size. */
     /* Adds the split off memory blocks back to the unallocated lists.  */
-    public Memory splitToSize(Memory foundMemory, int desiredSize) {
+    protected Memory splitToSize(Memory foundMemory, int desiredSize) {
         while (foundMemory.getSize() > desiredSize) {
             Memory newMemory = foundMemory.split();
             addToUnallocated(newMemory);
@@ -89,6 +104,7 @@ public class MemoryManager {
     /* memory list and deallocates that memory block. Returns  */
     /* the resulting memory block after merging if successful. */
     public Memory deallocate(int requestNumber) {
+        Memory merged = null;
         /* Search through the allocated memory to find */
         /* the memory block to be released.            */
         for (Memory allocatedMemory : allocated) {
@@ -97,17 +113,16 @@ public class MemoryManager {
                 allocated.remove(allocatedMemory);
                 allocatedMemory.allocatedBy = 0;
                 /* Merge it with all of it's buddies. */
-                Memory merged = merge(allocatedMemory);
+                merged = merge(allocatedMemory);
                 /* Add the merged block to the unallocated list. */
                 addToUnallocated(merged);
                 /* See if any deferred requests can now be fulfilled. */
                 attemptAllocationOfDeferred();
-                return merged;
+                break;
             }
         }
 
-        /* Cannot be deallocated because it had not been allocated. */
-        return new Memory(0);
+        return merged;
     }
 
     /* Takes in a memory block and attempts to merge it with  */
@@ -152,8 +167,8 @@ public class MemoryManager {
         }
     }
 
-    /* Takes a memory location and adds it to */
-    /* the unallocated list of lists.         */
+    /* Takes a memory location and adds it to the proper */
+    /* list in the unallocated list of lists.            */
     private void addToUnallocated(Memory memory) {
         unallocated.get(memory.getSize() - Memory.minBlockSize).add(memory);
     }
