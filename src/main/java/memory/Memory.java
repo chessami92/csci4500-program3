@@ -1,5 +1,16 @@
 package memory;
 
+/*
+ * Author: Josh DeWitt
+ * Written for Program 3 during CSCI4500 in 2013 Summer session.
+ *
+ * A memory chunk in the allocation scheme. The size is represented as a
+ * power of two for efficiency. The memory can be split, provided that it
+ * is not allocated and it's size is greater than the minimum block size.
+ * Merging must only be performed with it's buddy, which is identified by
+ * calling getBuddyAddress() and checking that the sizes are equal.
+ */
+
 public class Memory {
     /* The minimum block size available, stored as log2 of the actual size. */
     public static int minBlockSize;
@@ -62,10 +73,12 @@ public class Memory {
         return this;
     }
 
+    /* Get the address of this memory block's buddy. */
     public int getBuddyAddress() {
         return  (isEvenBuddy() ? address + (1 << size) : address - (1 << size));
     }
 
+    /* See if this memory chuck is an even or odd chunk. */
     private boolean isEvenBuddy() {
         return (((address >> size) & 1) == 0);
     }
