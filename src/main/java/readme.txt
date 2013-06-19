@@ -8,3 +8,6 @@ Run the program using the main class.
 
 Program reads from standard input which can be redirected as normal.
     $ java main.BuddyMemoryAlgorithm < test_input
+
+Program can also read from a file supplied as an argument.
+    $ java main.BuddyMemoryAlgorithm test_input
