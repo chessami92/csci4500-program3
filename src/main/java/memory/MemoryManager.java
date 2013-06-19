@@ -169,7 +169,22 @@ public class MemoryManager {
 
     /* Takes a memory location and adds it to the proper */
     /* list in the unallocated list of lists.            */
+    /* Makes sure that the list is still sorted to make  */
+    /* solution guaranteed to be the same as the example.*/
     private void addToUnallocated(Memory memory) {
-        unallocated.get(memory.getSize() - Memory.minBlockSize).add(memory);
+        List<Memory> nSizeUnallocated = unallocated.get(memory.getSize() - Memory.minBlockSize);
+
+        /* Look through the array to find where it should be inserted */
+        /* in order to keep the unallocated array sorted by address.  */
+        int i;
+        for (i = 0; i < nSizeUnallocated.size(); ++i) {
+            if (nSizeUnallocated.get(i).getAddress() > memory.getAddress()) {
+                break;
+            }
+        }
+
+        /* Add the memory at the found size, or at 0 if the */
+        /* list was empty to begin with.                    */
+        nSizeUnallocated.add(i, memory);
     }
 }
