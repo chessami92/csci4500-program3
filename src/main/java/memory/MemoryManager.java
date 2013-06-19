@@ -161,7 +161,7 @@ public class MemoryManager {
             /* the deferred requests list.            */
             Memory allocated = allocate(deferredRequests.poll());
             if (allocated != null) {
-                System.out.printf("\tDeferred request %d allocated; addr = 0x%08x.\n",
+                System.out.printf("   Deferred request %d allocated; addr = 0x%08x.\n",
                         allocated.allocatedBy, allocated.getAddress());
             }
         }

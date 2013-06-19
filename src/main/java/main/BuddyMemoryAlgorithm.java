@@ -45,17 +45,17 @@ public class BuddyMemoryAlgorithm {
                 Memory allocated = manager.allocate(request);
                 if (allocated == null) {
                     /* The allocation returned null, could not be fulfilled. */
-                    System.out.println("\tRequest deferred.");
+                    System.out.println("   Request deferred.");
                 } else {
                     /* The allocation was successful. Notify the user */
                     /* of the address of the newly allocated memory.  */
-                    System.out.printf("\tSuccess; addr = 0x%08x.\n", allocated.getAddress());
+                    System.out.printf("   Success; addr = 0x%08x.\n", allocated.getAddress());
 
                 }
             } else if (requestType == '-') {
                 /* Deallocate the memory block identified by the request ID. */
                 /* This will always be successful, so print as such.         */
-                System.out.printf("Request ID %d: deallocate.\n\tSuccess.\n", requestId);
+                System.out.printf("Request ID %d: deallocate.\n   Success.\n", requestId);
                 manager.deallocate(requestId);
             }
         }
